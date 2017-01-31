@@ -1,0 +1,10 @@
+{
+  "name": "aram-ranked-registrer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "@romaindurand",
+  "scripts": {
+    "start": "electron ."
+  }
+}
