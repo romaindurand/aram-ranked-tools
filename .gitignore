@@ -52,3 +52,4 @@ semantic/src
 semantic/tasks
 semantic.json
 semantic/gulpfile.js
+yarn.lock

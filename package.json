@@ -6,5 +6,11 @@
   "author": "@romaindurand",
   "scripts": {
     "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^1.4.15",
+    "jquery": "^3.1.1",
+    "node-horseman": "^3.2.0",
+    "phantomjs-prebuilt": "^2.1.14"
   }
 }

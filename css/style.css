@@ -1,0 +1,32 @@
+#overlay {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5)
+}
+
+#overlay.active {
+    display: block;
+}
+
+*:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+}
+
+.form-control:focus, *:focus {
+    border-color: #6db3fd;
+    border-width: 2px;
+    box-shadow: none;
+}
+
+.rating {
+    left: 70%;
+    position: absolute;
+}
+
+.ranking {
+    left: 33%;
+    position: absolute;
+}
