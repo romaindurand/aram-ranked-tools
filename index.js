@@ -6,10 +6,10 @@ let win
 function createWindow () {
   win = new BrowserWindow({
     frame: false,
-    width: 800,
-    height: 300,
-    'min-width': 500,
-    'min-height': 200,
+    width: 1024,
+    height: 425,
+    'minWidth': 1024,
+    'minHeight': 425,
     'accept-first-mouse': true,
     'title-bar-style': 'hidden'
   })

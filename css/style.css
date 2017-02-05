@@ -30,3 +30,38 @@
     left: 33%;
     position: absolute;
 }
+
+tr th {
+    text-align: center;
+}
+
+#formAddUser {
+    display: inline-block;
+}
+
+#paneRegister {
+    padding: 5px;
+}
+
+.column-third {
+    width: 33.33%;
+    float: left;
+    padding: 5px
+}
+
+label {
+    white-space: normal;
+}
+
+textarea {
+    resize: none;
+}
+
+#paneRegister p {
+    margin: 0;
+}
+
+#paneRegister3 {
+    height: 100%;
+    overflow-y: scroll
+}
