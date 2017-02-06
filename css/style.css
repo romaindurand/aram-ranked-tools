@@ -22,13 +22,19 @@
 }
 
 .rating {
-    left: 70%;
+    left: 80%;
+    top: 30px;
     position: absolute;
 }
 
 .ranking {
-    left: 33%;
+    font-weight: bold;
+}
+
+.ranking-col {
+    left:45%;
     position: absolute;
+    top: 30px;
 }
 
 tr th {
@@ -64,4 +70,13 @@ textarea {
 #paneRegister3 {
     height: 100%;
     overflow-y: scroll
+}
+
+#paneHome .toolbar-actions select {
+    width: 80px;
+    -webkit-app-region: no-drag;
+}
+
+.list-group-item {
+    position: relative;
 }
