@@ -2,16 +2,17 @@ const $ = require('jquery')
 const utils = require('./utils')
 const usersList = require('./users-list')
 const $inputUsername = $('#inputUsername')
-const aramRanked = require('./aram-ranked')
+const AramRanked = require('./aram-ranked')
 
 module.exports = {
   selector: '#paneHome',
   navText: 'Home',
   navIcon: 'icon-home',
-  servers: ['euw'],
+  servers: AramRanked.getServers(),
 
   init (store) {
     this.store = store
+    store.server = store.server || 'euw'
     usersList.init(store)
     this.bindEvents()
     this.createServersSelect()
@@ -20,6 +21,12 @@ module.exports = {
 
   bindEvents () {
     $('#formAddUser').submit(this.handleAddUser.bind(this))
+    $('#paneHome .toolbar-actions select').change(this.changeServer.bind(this))
+  },
+
+  changeServer (event) {
+    this.store.server = $('#paneHome .toolbar-actions select').val()
+    usersList.empty()
   },
 
   handleAddUser (event) {
@@ -46,8 +53,8 @@ module.exports = {
   },
 
   createServersSelect () {
-    this.servers.forEach((server) => {
-      $('#paneHome .toolbar-actions select').append(`<option value="${server}">${server.toUpperCase()}</option>`)
+    Object.keys(this.servers).forEach((server) => {
+      $('#paneHome .toolbar-actions select').append(`<option value="${server}">${this.servers[server]}</option>`)
     })
   },
 
@@ -68,7 +75,7 @@ module.exports = {
   },
 
   refreshTotalUsers () {
-    aramRanked.getTotalUsers().then((totalUsers) => {
+    new AramRanked(this.store.server).getTotalUsers().then((totalUsers) => {
       this.store.totalUsers = totalUsers
       usersList.updateTotalUsers()
     })

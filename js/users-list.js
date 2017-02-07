@@ -1,9 +1,13 @@
 const $ = require('jquery')
-const aramRanked = require('./aram-ranked')
+const AramRanked = require('./aram-ranked')
 
 module.exports = {
   init (store) {
     this.store = store
+  },
+
+  empty () {
+    $('#usersList').html('')
   },
 
   addUserItem (username = '') {
@@ -25,6 +29,7 @@ module.exports = {
   addUser (username) {
     return new Promise((resolve, reject) => {
       const $userItem = this.addUserItem(username)
+      const aramRanked = new AramRanked(this.store.server)
       aramRanked.getUserByName(username)
         .then((user) => {
           aramRanked.getRankingFromUser(user).then((ranking) => {

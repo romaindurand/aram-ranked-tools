@@ -3,39 +3,36 @@ const $ = require('jquery')
 const siteRoot = 'http://www.aram-ranked.info'
 const rankingUrl = 'http://www.aram-ranked.info/euw/statistics/ranking'
 const welcomeMessage = 'Welcome To ARAM Ranked'
-const totalUsersRegex = /rating ranking of ([0-9]*) summoners/g
-const titleRegexp = /<title>(.*)<\/title>/g
-const summonerIdRexexp = /href="\/euw\/twitter_oauth\/index\?summoner_id=(\d*)"/g
 
-class ErrorEmptyUsername extends Error {
+class EmptyUsernameError extends Error {
   constructor () {
     super()
     this.message = 'Empty user name ...'
     this.status = 'empty_username'
   }
 }
-class ErrorUserNotFound extends Error {
+class UserNotFoundError extends Error {
   constructor () {
     super()
     this.message = 'User was not found on this server.'
     this.status = 'user_not_found'
   }
 }
-class AuthTokenNotFound extends Error {
+class AuthTokenNotFoundError extends Error {
   constructor () {
     super()
     this.message = 'Auth token was not found on this page.'
     this.status = 'auth_token_not_found'
   }
 }
-class UserIdNotFound extends Error {
+class UserIdNotFoundError extends Error {
   constructor () {
     super()
     this.message = 'User ID not found on this page.'
     this.status = 'user_id_not_found'
   }
 }
-class TotalUsersNotFound extends Error {
+class TotalUsersNotFoundError extends Error {
   constructor () {
     super()
     this.message = 'Total users count not found on this page.'
@@ -43,14 +40,38 @@ class TotalUsersNotFound extends Error {
   }
 }
 
-module.exports = {
+class AramRanked {
+  constructor (server) {
+    if (!server) throw new Error('You need to specify a server (see docs)')
+    server = server.toLowerCase()
+    if (!AramRanked.getServers()[server]) throw new Error('You need to specify a valid server (see docs)')
+    this.server = server
+  }
+
+  static getServers () {
+    return {
+      euw: 'EU West',
+      na: 'North America',
+      kr: 'Korea',
+      eune: 'EU North&amp;East',
+      ja: 'Japan',
+      ru: 'Russia',
+      tr: 'Turky',
+      br: 'Brazil',
+      oce: 'Oceania',
+      las: 'LAS',
+      lan: 'LAN'
+    }
+  }
+
   getTotalUsers () {
     return $.ajax(rankingUrl).then((html) => {
+      const totalUsersRegex = /rating ranking of ([0-9]*) summoners/g
       var matches = totalUsersRegex.exec(html)
-      if (!matches) throw new TotalUsersNotFound()
+      if (!matches) throw new TotalUsersNotFoundError()
       return matches[1]
     })
-  },
+  }
 
   getRankingFromUser (user) {
     return $.ajax(user.url).then((html) => {
@@ -61,30 +82,31 @@ module.exports = {
         .map((idx, el) => $(el).text())
       return row[0]
     })
-  },
+  }
 
   getAuthToken (html) {
     const tokenRegexp = /name="authenticity_token" value="([a-zA-Z0-9/+-=]*)"/g
     const match = tokenRegexp.exec(html)
-    if (!match) throw new AuthTokenNotFound()
+    if (!match) throw new AuthTokenNotFoundError()
     return match[1]
-  },
+  }
 
   isHomePage (html) {
-    return !!titleRegexp.exec(html)
-  },
+    const homepageRegexp = /<title>ARAM ranked<\/title>/g
+    return !!homepageRegexp.exec(html)
+  }
 
   getUserByName (username) {
-    if (!username) return Promise.reject(new ErrorEmptyUsername())
+    if (!username) return Promise.reject(new EmptyUsernameError())
 
     const user = {}
 
-    return $.ajax({url: 'http://www.aram-ranked.info/euw'})
+    return $.ajax({url: `http://www.aram-ranked.info/${this.server}`})
       .then(this.getAuthToken)
       .then((authToken) => {
         return $.ajax({
           type: 'POST',
-          url: 'http://www.aram-ranked.info/euw/statistics/submit',
+          url: `http://www.aram-ranked.info/${this.server}/statistics/submit`,
           data: {
             authenticity_token: authToken,
             summoner_name: username,
@@ -94,24 +116,25 @@ module.exports = {
       })
     .then((html) => {
       if (this.isHomePage(html)) {
-        throw new ErrorUserNotFound()
+        throw new UserNotFoundError()
       }
       user.id = this.getUserId(html)
       Object.assign(user, this.extractUserInfos(html))
       user.isNew = this.containsWelcomeMessage(html)
       return user
     })
-  },
+  }
 
   getUserId (html) {
+    const summonerIdRexexp = /twitter_oauth\/index\?summoner_id=(\d*)"/g
     const match = summonerIdRexexp.exec(html)
-    if (!match) throw new UserIdNotFound()
+    if (!match) throw new UserIdNotFoundError()
     return match[1]
-  },
+  }
 
   containsWelcomeMessage (html) {
     return html.indexOf(welcomeMessage) !== -1
-  },
+  }
 
   extractUserInfos (html) {
     // prevent assets from being loaded by jQuery parsing
@@ -132,3 +155,5 @@ module.exports = {
     return user
   }
 }
+
+module.exports = AramRanked

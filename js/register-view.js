@@ -1,6 +1,7 @@
 const $ = require('jquery')
 const translations = require('./translations')
 const utils = require('./utils')
+const AramRanked = require('./aram-ranked')
 
 module.exports = {
   selector: '#paneRegister',
@@ -24,7 +25,7 @@ module.exports = {
 
   bindEvents () {
     $('#paneRegister1 form button').click(this.extractUsernames)
-    $('#paneRegister2 button.btn-primary').click(this.registerUsers)
+    $('#paneRegister2 button.btn-primary').click(this.registerUsers.bind(this))
   },
 
   extractUsernames () {
@@ -67,6 +68,24 @@ module.exports = {
           </div>
         </li>`)
       $('#paneRegister3 ul').append($userItem)
+      const aramRanked = new AramRanked(this.store.server)
+      aramRanked.getUserByName(username).then((user) => {
+        if (user.isNew) {
+          const greenDot = utils.getColoredDot('green')
+          $userItem.find('p').html(`<p>${greenDot} New user !</p>`)
+        } else {
+          const orangeDot = utils.getColoredDot('orange')
+          $userItem.find('p').html(`<p>${orangeDot} User already registered</p>`)
+        }
+        $userItem.find('.username').html(user.username)
+      }).catch((error) => {
+        if (error.status === 'user_not_found') {
+          const redDot = utils.getColoredDot('red')
+          $userItem.find('p').html(`<p>${redDot} User not found :/</p>`)
+        } else {
+          console.error(error)
+        }
+      })
     })
   }
 }
