@@ -27,7 +27,7 @@ module.exports = {
       const $userItem = this.addUserItem(username)
       aramRanked.getUserByName(username)
         .then((user) => {
-          aramRanked.getRankingFromUrl(user.rankingUrl).then((ranking) => {
+          aramRanked.getRankingFromUser(user).then((ranking) => {
             user.ranking = ranking
             this.updateUserItem(user, 'ranking')
           })

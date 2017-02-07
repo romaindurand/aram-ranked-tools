@@ -8,9 +8,7 @@
     "start": "electron ."
   },
   "dependencies": {
-    "jquery": "^3.1.1",
-    "node-horseman": "^3.2.0",
-    "phantomjs-prebuilt": "^2.1.14"
+    "jquery": "^3.1.1"
   },
   "devDependencies": {
     "electron": "^1.4.15"
