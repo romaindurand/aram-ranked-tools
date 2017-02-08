@@ -7,7 +7,7 @@ module.exports = {
   },
 
   empty () {
-    $('#usersList').html('')
+    $('#usersList').find('.list-group-item').remove()
   },
 
   addUserItem (username = '') {

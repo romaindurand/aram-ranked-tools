@@ -1,8 +1,10 @@
-const $ = require('jquery')
+const domino = require('domino')
+const Zepto = require('zepto-node')
+const request = require('request-promise')
 
 const siteRoot = 'http://www.aram-ranked.info'
-const rankingUrl = 'http://www.aram-ranked.info/euw/statistics/ranking'
 const welcomeMessage = 'Welcome To ARAM Ranked'
+const authCookieName = '_ARAMTracker_session'
 
 class EmptyUsernameError extends Error {
   constructor () {
@@ -25,13 +27,6 @@ class AuthTokenNotFoundError extends Error {
     this.status = 'auth_token_not_found'
   }
 }
-class UserIdNotFoundError extends Error {
-  constructor () {
-    super()
-    this.message = 'User ID not found on this page.'
-    this.status = 'user_id_not_found'
-  }
-}
 class TotalUsersNotFoundError extends Error {
   constructor () {
     super()
@@ -46,6 +41,7 @@ class AramRanked {
     server = server.toLowerCase()
     if (!AramRanked.getServers()[server]) throw new Error('You need to specify a valid server (see docs)')
     this.server = server
+    this.rankingUrl = `http://www.aram-ranked.info/{server}/statistics/ranking`
   }
 
   static getServers () {
@@ -65,7 +61,7 @@ class AramRanked {
   }
 
   getTotalUsers () {
-    return $.ajax(rankingUrl).then((html) => {
+    return request(this.rankingUrl).then((html) => {
       const totalUsersRegex = /rating ranking of ([0-9]*) summoners/g
       var matches = totalUsersRegex.exec(html)
       if (!matches) throw new TotalUsersNotFoundError()
@@ -74,21 +70,22 @@ class AramRanked {
   }
 
   getRankingFromUser (user) {
-    return $.ajax(user.url).then((html) => {
-      const srcRegex = /src=/gi
-      html = html.replace(srcRegex, 'data-src=')
-      const row = $(html)
-        .find('#active-row td')
+    return request(user.rankingUrl).then((html) => {
+      const $ = this.getWindow(html)
+      const row = $('#active-row td')
         .map((idx, el) => $(el).text())
       return row[0]
     })
   }
 
-  getAuthToken (html) {
+  getAuthConf ({body, response}) {
     const tokenRegexp = /name="authenticity_token" value="([a-zA-Z0-9/+-=]*)"/g
-    const match = tokenRegexp.exec(html)
+    const match = tokenRegexp.exec(body)
     if (!match) throw new AuthTokenNotFoundError()
-    return match[1]
+    const authToken = match[1]
+    const cookies = response.headers['set-cookie']
+    const authCookie = cookies.find((cookie) => cookie.indexOf(authCookieName) === 0).split('=')[1].split(';')[0]
+    return {authCookie, authToken}
   }
 
   isHomePage (html) {
@@ -100,55 +97,81 @@ class AramRanked {
     if (!username) return Promise.reject(new EmptyUsernameError())
 
     const user = {}
+    this.homeUrl = `http://www.aram-ranked.info/${this.server}`
 
-    return $.ajax({url: `http://www.aram-ranked.info/${this.server}`})
-      .then(this.getAuthToken)
-      .then((authToken) => {
-        return $.ajax({
-          type: 'POST',
-          url: `http://www.aram-ranked.info/${this.server}/statistics/submit`,
-          data: {
-            authenticity_token: authToken,
-            summoner_name: username,
-            utf8: '&#x2713;'
-          }
-        })
-      })
-    .then((html) => {
-      if (this.isHomePage(html)) {
-        throw new UserNotFoundError()
+    return request({
+      uri: this.homeUrl,
+      transform: (body, response, error) => {
+        if (error) throw error
+        return {body, response}
       }
-      user.id = this.getUserId(html)
-      Object.assign(user, this.extractUserInfos(html))
-      user.isNew = this.containsWelcomeMessage(html)
-      return user
+    })
+    .then(this.getAuthConf)
+      .then(({authToken, authCookie}) => this.getUserId({authToken, authCookie, username}))
+      .then(({html, url}) => {
+        if (this.isHomePage(html)) {
+          throw new UserNotFoundError()
+        }
+        Object.assign(user, this.extractUserInfos({url, html}))
+        user.isNew = this.containsWelcomeMessage(html)
+        return user
+      })
+  }
+
+  getUserId ({authToken, authCookie, username}) {
+    const j = request.jar()
+    const cookie = request.cookie(`${authCookieName}=${authCookie}`)
+    j.setCookie(cookie, this.homeUrl)
+    return request({
+      method: 'POST',
+      uri: `http://www.aram-ranked.info/${this.server}/statistics/submit`,
+      form: {
+        authenticity_token: authToken,
+        summoner_name: username,
+        utf8: '✓'
+      },
+      jar: j
+    }).catch(this.handleRedirect.bind(this))
+  }
+
+  getPageByUrl (url) {
+    return request(url).then((html) => {
+      return {html, url}
     })
   }
 
-  getUserId (html) {
-    const summonerIdRexexp = /twitter_oauth\/index\?summoner_id=(\d*)"/g
-    const match = summonerIdRexexp.exec(html)
-    if (!match) throw new UserIdNotFoundError()
-    return match[1]
+  handleRedirect (error) {
+    if (error.statusCode === 302) {
+      return this.getPageByUrl(error.response.headers.location)
+    }
   }
 
   containsWelcomeMessage (html) {
     return html.indexOf(welcomeMessage) !== -1
   }
 
-  extractUserInfos (html) {
-    // prevent assets from being loaded by jQuery parsing
-    html = html.replace(/src=/gi, 'data-src=')
+  extractUserId (url) {
+    return url.split('=')[1]
+  }
 
-    const user = {}
-    const $html = $(html)
-    const usernameNode = $html.find('dd').get(0)
-    const ratingNode = $html.find('dd').get(2)
-    user.lastGame = $html.find('#recent tr:first-child td:first-child').text()
-    user.refreshUrl = siteRoot + $($html.find('.btn.btn-refresh')[0]).attr('href')
-    user.rankingUrl = siteRoot + $html.find('.btn.btn-search.btn-ranking').attr('href')
+  getWindow (html) {
+    const srcRegex = /src=/gi
+    html = html.replace(srcRegex, 'data-src=')
+    const window = domino.createWindow(html)
+    return Zepto(window)
+  }
+
+  extractUserInfos ({html, url}) {
+    const user = {url}
+    user.id = this.extractUserId(url)
+    const $ = this.getWindow(html)
+    const usernameNode = $('dd').get(0)
+    const ratingNode = $('dd').get(2)
+    user.lastGame = $('#recent tr:first-child td:first-child').text()
+    user.refreshUrl = siteRoot + $($('.btn.btn-refresh')[0]).attr('href')
+    user.rankingUrl = siteRoot + $('.btn.btn-search.btn-ranking').attr('href')
     user.summonerId = user.rankingUrl.slice(user.rankingUrl.indexOf('=') + 1)
-    user.summonerIcon = siteRoot + $($html.find('img.icon_image')[0]).data('src')
+    user.summonerIcon = siteRoot + $($('img.icon_image')[0]).data('src')
     user.rating = $(ratingNode).text().trim()
     user.username = $(usernameNode).text().trim()
 
