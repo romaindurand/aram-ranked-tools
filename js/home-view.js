@@ -2,7 +2,7 @@ const $ = require('jquery')
 const utils = require('./utils')
 const usersList = require('./users-list')
 const $inputUsername = $('#inputUsername')
-const AramRanked = require('./aram-ranked')
+const AramRanked = require('aram-ranked')
 
 module.exports = {
   selector: '#paneHome',

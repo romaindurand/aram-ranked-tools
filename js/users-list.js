@@ -1,5 +1,5 @@
 const $ = require('jquery')
-const AramRanked = require('./aram-ranked')
+const AramRanked = require('aram-ranked')
 
 module.exports = {
   init (store) {
