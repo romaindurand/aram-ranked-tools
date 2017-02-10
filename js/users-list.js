@@ -32,7 +32,7 @@ module.exports = {
       const aramRanked = new AramRanked(this.store.server)
       aramRanked.getUserByName(username)
         .then((user) => {
-          aramRanked.getRankingFromUser(user).then((ranking) => {
+          user.getRanking().then((ranking) => {
             user.ranking = ranking
             this.updateUserItem(user, 'ranking')
           })

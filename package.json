@@ -9,7 +9,7 @@
     "test": "standard && ava tests/*"
   },
   "dependencies": {
-    "aram-ranked": "0.0.1",
+    "aram-ranked": "0.1.0",
     "electron": "^1.4.15",
     "jquery": "^3.1.1"
   },
