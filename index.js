@@ -1,7 +1,8 @@
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, Tray} = require('electron')
+const {ipcMain} = require('electron')
 const path = require('path')
 const url = require('url')
-let win
+let win, tray
 
 function createWindow () {
   win = new BrowserWindow({
@@ -11,7 +12,8 @@ function createWindow () {
     'minWidth': 1024,
     'minHeight': 425,
     'accept-first-mouse': true,
-    'title-bar-style': 'hidden'
+    'title-bar-style': 'hidden',
+    'icon': './images/icon.jpg'
   })
 
   win.loadURL(url.format({
@@ -24,6 +26,13 @@ function createWindow () {
 
   win.on('closed', () => {
     win = null
+    tray.destroy()
+    tray = null
+  })
+
+  tray = new Tray('./images/icon.jpg')
+  tray.on('click', () => {
+    win.isVisible() ? win.hide() : win.show()
   })
 }
 
@@ -38,5 +47,18 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (win === null) {
     createWindow()
+  }
+})
+
+ipcMain.on('notification', (event, message) => {
+  if (win.isVisible()) {
+    win.flashFrame(true)
+    win.focus()
+  } else {
+    tray.displayBalloon({
+      title: 'ARAM Ranked Tools',
+      content: message,
+      icon: './images/icon.jpg'
+    })
   }
 })

@@ -22,7 +22,7 @@
 }
 
 .rating {
-    left: 80%;
+    left: 60%;
     top: 30px;
     position: absolute;
 }
@@ -32,7 +32,7 @@
 }
 
 .ranking-col {
-    left:45%;
+    left:33%;
     position: absolute;
     top: 30px;
 }
@@ -79,4 +79,30 @@ textarea {
 
 .list-group-item {
     position: relative;
+    transition: background-color 2s ease-in-out;
+}
+
+.tooltip {
+    pointer-events: none;
+    opacity: 0;
+    position: absolute;
+    padding: 0px 7px;
+    border-radius: 3px;
+    border: 1px solid #aaa;
+    background-color: white;
+    transition: opacity 0.4s ease-in-out;
+}
+
+.tooltip-on {
+    opacity: 1;
+}
+
+.green-flash {
+    background-color: #34c84a;
+    transition: none;
+}
+
+.refreshed {
+    margin-right: 10px;
+    margin-top: 3px;
 }

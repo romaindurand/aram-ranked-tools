@@ -26,6 +26,7 @@ module.exports = {
 
   changeServer (event) {
     this.store.server = $('#paneHome .toolbar-actions select').val()
+    this.refreshTotalUsers()
     usersList.empty()
   },
 
@@ -34,14 +35,14 @@ module.exports = {
     this.setAddUserFormDisabled(true)
     this.setHomeStatus('green', `Loading ${$inputUsername.val()} data ...`)
     usersList.addUser($inputUsername.val())
-      .then((user) => {
+      .then(user => {
         console.log(user)
         this.setAddUserFormDisabled(false).emptyAndFocus()
         const message = user.isNew ? 'New user registered !!' : `Data loaded successfully !`
         this.setHomeStatus('green', message)
         this.store.users.push(user)
       })
-      .catch((ex) => {
+      .catch(ex => {
         if (ex.status) this.setHomeStatus('orange', ex.message)
         else {
           this.setHomeStatus('red', `Error loading data, please try again.`)
@@ -75,7 +76,7 @@ module.exports = {
   },
 
   refreshTotalUsers () {
-    new AramRanked(this.store.server).getTotalUsers().then((totalUsers) => {
+    new AramRanked(this.store.server).getTotalUsers().then(totalUsers => {
       this.store.totalUsers = totalUsers
       usersList.updateTotalUsers()
     })

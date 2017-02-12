@@ -69,7 +69,7 @@ module.exports = {
         </li>`)
       $('#paneRegister3 ul').append($userItem)
       const aramRanked = new AramRanked(this.store.server)
-      aramRanked.getUserByName(username).then((user) => {
+      aramRanked.getUserByName(username).then(user => {
         if (user.isNew) {
           const greenDot = utils.getColoredDot('green')
           $userItem.find('p').html(`<p>${greenDot} New user !</p>`)
@@ -78,7 +78,7 @@ module.exports = {
           $userItem.find('p').html(`<p>${orangeDot} User already registered</p>`)
         }
         $userItem.find('.username').html(user.username)
-      }).catch((error) => {
+      }).catch(error => {
         if (error.status === 'user_not_found') {
           const redDot = utils.getColoredDot('red')
           $userItem.find('p').html(`<p>${redDot} User not found :/</p>`)
