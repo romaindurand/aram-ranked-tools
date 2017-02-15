@@ -13,7 +13,7 @@ function createWindow () {
     'minHeight': 425,
     'accept-first-mouse': true,
     'title-bar-style': 'hidden',
-    'icon': './images/icon.jpg'
+    'icon': path.join(__dirname, 'images/icon.jpg')
   })
 
   win.loadURL(url.format({
@@ -22,7 +22,7 @@ function createWindow () {
     slashes: true
   }))
 
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
 
   win.on('closed', () => {
     win = null
@@ -30,7 +30,7 @@ function createWindow () {
     tray = null
   })
 
-  tray = new Tray('./images/icon.jpg')
+  tray = new Tray(path.join(__dirname, 'images/icon.jpg'))
   tray.on('click', () => {
     win.isVisible() ? win.hide() : win.show()
   })
@@ -56,6 +56,6 @@ ipcMain.on('notification', (event, notification) => {
   tray.displayBalloon({
     title: notification.title,
     content: notification.message,
-    icon: './images/icon.jpg'
+    icon: path.join(__dirname, 'images/icon.jpg')
   })
 })
