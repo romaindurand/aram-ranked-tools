@@ -1,15 +1,16 @@
 const $ = require('jquery')
 const translations = require('./translations')
 const utils = require('./utils')
-const AramRanked = require('aram-ranked')
+const {AramRanked} = require('aram-ranked')
 
 module.exports = {
   selector: '#paneRegister',
   navText: 'Auto register',
   navIcon: 'icon-plus-circled',
 
-  init (store) {
-    this.store = store
+  init (db) {
+    this.db = db
+    this.store = db.store
     this.createLanguagesMenu()
     this.bindEvents()
   },

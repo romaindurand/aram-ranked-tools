@@ -50,15 +50,12 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.on('notification', (event, message) => {
-  if (win.isVisible()) {
-    win.flashFrame(true)
-    win.focus()
-  } else {
-    tray.displayBalloon({
-      title: 'ARAM Ranked Tools',
-      content: message,
-      icon: './images/icon.jpg'
-    })
-  }
+ipcMain.on('notification', (event, notification) => {
+  win.flashFrame(true)
+  win.focus()
+  tray.displayBalloon({
+    title: notification.title,
+    content: notification.message,
+    icon: './images/icon.jpg'
+  })
 })

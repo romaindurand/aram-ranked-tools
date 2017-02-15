@@ -46,10 +46,5 @@ Network Trash Folder
 Temporary Items
 .apdisk
 node_modules
-semantic/dist/components
-semantic/dist/themes
-semantic/src
-semantic/tasks
-semantic.json
-semantic/gulpfile.js
+db.json
 yarn.lock

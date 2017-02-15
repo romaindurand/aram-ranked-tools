@@ -2,7 +2,7 @@ const $ = require('jquery')
 const utils = require('./utils')
 const usersList = require('./users-list')
 const $inputUsername = $('#inputUsername')
-const AramRanked = require('aram-ranked')
+const {AramRanked} = require('aram-ranked')
 
 module.exports = {
   selector: '#paneHome',
@@ -10,10 +10,12 @@ module.exports = {
   navIcon: 'icon-home',
   servers: AramRanked.getServers(),
 
-  init (store) {
-    this.store = store
-    store.server = store.server || 'euw'
-    usersList.init(store)
+  init (db) {
+    this.db = db
+    this.store = db.store
+    this.store.server = this.store.server || 'euw'
+    this.store.users = this.store.users || []
+    usersList.init(this.db)
     this.bindEvents()
     this.createServersSelect()
     this.refreshTotalUsers()
@@ -22,6 +24,15 @@ module.exports = {
   bindEvents () {
     $('#formAddUser').submit(this.handleAddUser.bind(this))
     $('#paneHome .toolbar-actions select').change(this.changeServer.bind(this))
+    $('#paneHome .save-list').click(this.saveUserList.bind(this))
+  },
+
+  saveUserList () {
+    this.store.users = this.store.users.map(user => {
+      delete user.refreshed
+      return user
+    })
+    this.db.save()
   },
 
   changeServer (event) {

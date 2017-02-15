@@ -1,10 +1,10 @@
 const $ = require('jquery')
 
 module.exports = {
-  init (store, views = []) {
+  init (db, views = []) {
+    this.db = db
     this.views = views
-    this.store = store
-    views.forEach((view) => view.init(store))
+    views.forEach((view) => view.init(db))
     views.forEach(this.createMenuItem.bind(this))
   },
 
