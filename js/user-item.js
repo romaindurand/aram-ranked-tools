@@ -3,13 +3,15 @@ const moment = require('moment')
 const {User} = require('aram-ranked')
 const Tooltip = require('./tooltip')
 const Notification = require('./notifications')
+const {EmptyUsernameError} = require('./errors')
 
 class UserItem {
   constructor (db, user, server) {
     this.db = db
     this.store = db.store
     this.tooltip = new Tooltip()
-    if (!user) throw new Error('a 2nd argument must be provided')
+    if (!user) return new EmptyUsernameError()
+    this.autoRefresh = setInterval(this.refreshUser.bind(this), 1000 * 60 * 2)
     if (user instanceof User) {
       this.user = user
       this.createUserNode()
@@ -122,6 +124,7 @@ class UserItem {
   }
 
   refreshUser () {
+    if (!this.user.refreshData) return
     this.$userNode.addClass('loading')
     this.user.refreshData().then(user => {
       this.user = user
@@ -132,12 +135,24 @@ class UserItem {
       }
       this.updateNode()
       this.greenFlash()
+      this.store.history.push({
+        date: new Date().toISOString(),
+        username: user.username,
+        server: user.server,
+        ranking: +user.ranking
+      })
+      this.db.save('history')
+
+      const isALastGameUpdate = !!user.refreshed.find(diff => diff.key === 'lastGame')
       const notification = new Notification({
         title: `${user.username} has been updated !`,
-        message: this.getUpdateMessage()
+        message: this.getUpdateMessage(),
+        icon: user.summonerIcon,
+        minor: !isALastGameUpdate
       })
-      console.log(notification)
-      notification.send()
+      this.store.notifications.push(notification)
+      if (!isALastGameUpdate) return
+      notification.trayBubble()
     })
   }
 

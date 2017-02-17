@@ -107,6 +107,10 @@ textarea {
     margin-top: 3px;
 }
 
+.toolbar-actions {
+    -webkit-app-region: no-drag;
+}
+
 .loading {
     background: linear-gradient(270deg, #ffffff, #c7c7c7, #ffffff);
     background-size: 600% 600%;

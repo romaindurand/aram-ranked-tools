@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "aram-ranked": "0.2.1",
+    "d3": "^4.5.0",
     "electron": "^1.4.15",
     "jquery": "^3.1.1",
     "moment": "^2.17.1"

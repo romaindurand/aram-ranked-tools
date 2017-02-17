@@ -32,7 +32,7 @@ module.exports = {
       delete user.refreshed
       return user
     })
-    this.db.save()
+    this.db.save('users')
   },
 
   changeServer (event) {

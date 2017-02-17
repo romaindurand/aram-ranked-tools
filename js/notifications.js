@@ -9,9 +9,10 @@ class Notification {
     if (!this.title) throw new Error('Config object must have a non-empty title attribute')
     this.icon = config.icon
     this.html = config.html
+    this.minor = config.minor
   }
 
-  send () {
+  trayBubble () {
     ipcRenderer.send('notification', this)
   }
 }

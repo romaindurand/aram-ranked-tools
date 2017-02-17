@@ -95,8 +95,23 @@
               </ul>
             </div>
           </div>
-          <div id="paneNotifications">
-            <ul class="list-group"></ul>
+          <div class="pane" id="paneNotifications">
+            <ul class="list-group">
+              <div class="toolbar-actions">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox"> Hide minor notifications
+                  </label>
+                </div>
+              </div>
+            </ul>
+          </div>
+          <div class="pane" id="paneGraphs">
+            <svg width="800" height="400"></svg>
+            <button class="btn btn-default pull-right save-list">
+                <span class="icon icon-arrows-ccw"></span> Refresh
+            </button>
+            <div class="legend"></div>
           </div>
         </div>
       </div>

@@ -2,7 +2,8 @@ const {app, BrowserWindow, Tray} = require('electron')
 const {ipcMain} = require('electron')
 const path = require('path')
 const url = require('url')
-let win, tray
+const notifications = []
+let win, tray, currentNotification
 
 function createWindow () {
   win = new BrowserWindow({
@@ -22,7 +23,7 @@ function createWindow () {
     slashes: true
   }))
 
-  // win.webContents.openDevTools()
+  win.webContents.openDevTools()
 
   win.on('closed', () => {
     win = null
@@ -33,6 +34,17 @@ function createWindow () {
   tray = new Tray(path.join(__dirname, 'images/icon.jpg'))
   tray.on('click', () => {
     win.isVisible() ? win.hide() : win.show()
+  })
+
+  tray.on('balloon-click', () => {
+    currentNotification = null
+    win.show()
+    win.focus()
+  })
+
+  tray.on('balloon-closed', () => {
+    currentNotification = null
+    displaNextNotification()
   })
 }
 
@@ -50,12 +62,21 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.on('notification', (event, notification) => {
-  win.flashFrame(true)
-  win.focus()
+function displaNextNotification () {
+  if (currentNotification) return
+  currentNotification = notifications.shift()
+  setTimeout(() => {
+    currentNotification = null
+  }, 4000)
+  if (!currentNotification) return
   tray.displayBalloon({
-    title: notification.title,
-    content: notification.message,
+    title: currentNotification.title,
+    content: currentNotification.message,
     icon: path.join(__dirname, 'images/icon.jpg')
   })
+}
+
+ipcMain.on('notification', (event, notification) => {
+  notifications.push(notification)
+  displaNextNotification()
 })
