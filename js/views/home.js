@@ -94,11 +94,11 @@ class HomeView extends BaseView {
     this.$inputUsername.prop('disabled', flag)
     this.$el.find('form button').prop('disabled', flag)
 
-    return {
-      emptyAndFocus () {
-        this.$inputUsername.val('').focus()
-      }
-    }
+    return this
+  }
+
+  emptyAndFocus () {
+    this.$inputUsername.val('').focus()
   }
 
   setHomeStatus (color, message) {
@@ -109,6 +109,7 @@ class HomeView extends BaseView {
   refreshTotalUsers () {
     new AramRanked(this.store.server).getTotalUsers().then(totalUsers => {
       this.store.totalUsers = totalUsers
+      this.db.save('totalUsers')
       this.usersList.updateTotalUsers()
     })
   }

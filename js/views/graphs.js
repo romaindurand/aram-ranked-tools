@@ -25,6 +25,13 @@ class GraphsView extends BaseView {
     this.$el.find('button').click(() => {
       this.drawGraph()
     })
+    // this.store.history = new Proxy(this.store.history, {
+    //   set: (target, prop) => {
+    //     if (!Number.isInteger(parseInt(prop))) return true
+    //     this.drawGraph()
+    //     return true
+    //   }
+    // })
   }
 
   getUsers () {

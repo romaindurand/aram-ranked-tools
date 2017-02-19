@@ -53,5 +53,4 @@ class NotificationsView extends BaseView {
   }
 }
 
-
 module.exports = NotificationsView

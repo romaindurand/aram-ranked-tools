@@ -7,6 +7,7 @@ const BaseView = require('./base')
 class RegisterView extends BaseView {
   constructor (db) {
     super(db)
+    this.setLocale(this.store.autoRegisterLocale || 'Français')
     this.createLanguagesMenu()
     this.bindEvents()
   }
@@ -58,33 +59,49 @@ class RegisterView extends BaseView {
       const locale = language.locale_name
       this.$el.find('.column-1 select').append(`<option value="${locale}">${locale}</option>`)
     })
-    this.$el.find('.joined-room').text(translations[0].joined_room)
-    this.$el.find('.left-room').text(translations[0].left_room)
+    this.$el.find('.joined-room').text(this.joinedText)
+    this.$el.find('.left-room').text(this.leftText)
   }
 
   bindEvents () {
     this.$el.find('.column-1 form button').click(this.extractUsernames.bind(this))
+    this.$el.find('.column-1 select').change(this.changeAutoRegisterLocale.bind(this))
     this.$el.find('.column-2 button.btn-primary').click(this.registerUsers.bind(this))
+  }
+
+  changeAutoRegisterLocale (event) {
+    const locale = this.$el.find('.column-1 select').val()
+    this.setLocale(locale)
+  }
+
+  setLocale (localeName) {
+    this.store.autoRegisterLocale = localeName
+    const locale = translations.find(localeConf => localeConf.locale_name === localeName)
+    this.joinedText = locale.joined_room
+    this.leftText = locale.left_room
+    this.$el.find('.joined-room').text(this.joinedText)
+    this.$el.find('.left-room').text(this.leftText)
+    this.db.save()
   }
 
   extractUsernames () {
     const text = this.$el.find('.column-1 textarea').val()
     const usernames = text.split('\n')
-      .filter(containsUsername)
-      .map(selectUsername)
+      .filter(containsUsername.bind(this))
+      .map(selectUsername.bind(this))
       .filter(utils.unique)
 
     this.$el.find('.column-2 textarea').val(usernames.join('\n'))
 
     function selectUsername (line) {
-      const joinedRoom = translations[0].joined_room
-      const leftRoom = translations[0].left_room
+      const joinedRoom = this.joinedText
+      const leftRoom = this.leftText
       return line.replace(joinedRoom, '').replace(leftRoom, '')
     }
 
     function containsUsername (line) {
-      const joinedRoom = translations[0].joined_room
-      const leftRoom = translations[0].left_room
+      const joinedRoom = this.joinedText
+      const leftRoom = this.leftText
       return line.includes(joinedRoom) || line.includes(leftRoom)
     }
   }
