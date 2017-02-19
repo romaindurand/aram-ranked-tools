@@ -1,10 +1,7 @@
-const homeView = require('./home-view')
-const registerView = require('./register-view')
-const navView = require('./nav-view')
-const notificationsView = require('./notifications-view')
-const graphsView = require('./graphs-view')
+const $ = require('jquery')
 const {User} = require('aram-ranked')
-const Db = require('./db')
+const NavView = require('./views/nav')
+const Db = require('./lib/db')
 const db = new Db()
 
 db.store.history = db.store.history || []
@@ -14,5 +11,6 @@ if (db.store.users) {
   })
 }
 
-navView.init(db, [homeView, registerView, graphsView, notificationsView])
+const navView = new NavView(db)
+$('.window-content').append(navView.$el)
 

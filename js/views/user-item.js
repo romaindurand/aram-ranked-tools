@@ -1,14 +1,14 @@
 const $ = require('jquery')
 const moment = require('moment')
 const {User} = require('aram-ranked')
-const Tooltip = require('./tooltip')
-const Notification = require('./notifications')
-const {EmptyUsernameError} = require('./errors')
+const Tooltip = require('../lib/tooltip')
+const Notification = require('../lib//notifications')
+const BaseView = require('./base')
+const {EmptyUsernameError} = require('../lib/errors')
 
-class UserItem {
+class UserItem extends BaseView {
   constructor (db, user, server) {
-    this.db = db
-    this.store = db.store
+    super(db)
     this.tooltip = new Tooltip()
     if (!user) return new EmptyUsernameError()
     this.autoRefresh = setInterval(this.refreshUser.bind(this), 1000 * 60 * 2)
@@ -23,9 +23,25 @@ class UserItem {
         username: user,
         server: server
       }
-      this.createEmptyNode()
+      this.$el = this.render()
       return this
     }
+  }
+
+  render () {
+    this.user = this.user || {}
+    return $(`
+      <li class="list-group-item">
+        <img class="img-circle media-object pull-left summonerIcon" src="images/spinner-32px.gif" width="32" height="32">
+        <div class="media-body">
+          <strong class="username">${this.user.username || ''}</strong>
+          <p>Last game : <span class="lastGame"></span></p>
+          <span class="rating"></span>
+          <p class="ranking-col"><span class="ranking"></span> / <span class="totalUsers">${this.store.totalUsers || '....'}</span></p>
+          <button class="btn btn-default pull-right"><span class="icon icon-arrows-ccw"></span></button>
+          <span class="refreshed pull-right"></span>
+        </div>
+      </li>`)
   }
 
   getUser () {
@@ -37,34 +53,18 @@ class UserItem {
     })
   }
 
-  createEmptyNode () {
-    const $userNode = $(`
-      <li class="list-group-item">
-        <img class="img-circle media-object pull-left summonerIcon" src="images/spinner-32px.gif" width="32" height="32">
-        <div class="media-body">
-          <strong class="username">${this.user.username}</strong>
-          <p>Last game : <span class="lastGame"></span></p>
-          <span class="rating"></span>
-          <p class="ranking-col"><span class="ranking"></span> / <span class="totalUsers">${this.store.totalUsers || '....'}</span></p>
-          <button class="btn btn-default pull-right"><span class="icon icon-arrows-ccw"></span></button>
-          <span class="refreshed pull-right"></span>
-        </div>
-      </li>`)
-    this.$userNode = $userNode
-  }
-
   createUserNode () {
-    this.createEmptyNode(this.user.username)
+    this.$el = this.render()
     this.updateNode()
     this.refreshUser()
   }
 
   updateTotalUsers () {
-    this.$userNode.find('.totalUsers').text(this.store.totalUsers)
+    this.$el.find('.totalUsers').text(this.store.totalUsers)
   }
 
   updateNodeByKey (key) {
-    const $key = this.$userNode.find(`.${key}`)
+    const $key = this.$el.find(`.${key}`)
     switch (key) {
       case 'summonerIcon': $key.attr('src', this.user.summonerIcon); break
       case 'lastGame':
@@ -76,7 +76,7 @@ class UserItem {
         const diff = lastGame.diff(moment())
         if (diff > 0) lastGame.subtract({year: 1})
         const lastGameLabel = lastGame.fromNow()
-        this.$userNode.on('mouseenter mouseleave', '.lastGame', (event) => {
+        this.$el.on('mouseenter mouseleave', '.lastGame', (event) => {
           switch (event.type) {
             case 'mouseenter':
               this.tooltip.show({
@@ -94,7 +94,7 @@ class UserItem {
         $key.html(`${lastGameLabel}`)
         break
       case 'refreshUrl':
-        this.$userNode.find('button').click(this.refreshUser.bind(this, this.$userNode))
+        this.$el.find('button').click(this.refreshUser.bind(this, this.$el))
         break
       default: $key.html(this.user[key]); break
     }
@@ -102,7 +102,7 @@ class UserItem {
 
   updateNode (user, selectedKey) {
     if (!user) user = this.user
-    this.$userNode.removeClass('loading')
+    this.$el.removeClass('loading')
     let keys = ['username', 'summonerId', 'summonerIcon', 'rating', 'ranking', 'refreshUrl']
     if (selectedKey) keys = [selectedKey]
     keys.push('lastGame')
@@ -125,12 +125,12 @@ class UserItem {
 
   refreshUser () {
     if (!this.user.refreshData) return
-    this.$userNode.addClass('loading')
+    this.$el.addClass('loading')
     this.user.refreshData().then(user => {
       this.user = user
       // todo : add a label "refreshed xx seconds ago"
       if (!user.refreshed) {
-        this.$userNode.removeClass('loading')
+        this.$el.removeClass('loading')
         return
       }
       this.updateNode()
@@ -157,14 +157,14 @@ class UserItem {
   }
 
   greenFlash () {
-    this.$userNode.addClass('green-flash')
+    this.$el.addClass('green-flash')
     setTimeout(() => {
-      this.$userNode.removeClass('green-flash')
+      this.$el.removeClass('green-flash')
     }, 4000)
   }
 
-  setRefreshButtonDisabled ($userNode, flag) {
-    $userNode.find('button').prop('disabled', flag)
+  setRefreshButtonDisabled ($el, flag) {
+    $el.find('button').prop('disabled', flag)
   }
 }
 

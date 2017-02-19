@@ -1,28 +1,40 @@
 const $ = require('jquery')
 const UserItem = require('./user-item')
+const BaseView = require('./base')
 
-module.exports = {
-  init (db) {
-    this.db = db
-    this.store = db.store
+class UserList extends BaseView {
+  constructor (db) {
+    super(db)
     this.refreshList()
     this.userItemList = []
-  },
+  }
+
+  render () {
+    return $(`
+      <ul class="list-group">
+        <li class="list-group-header">
+          <table class="table-striped">
+          <thead><tr><th>Name</th><th>Ranking</th><th>Rating</th><th>Actions</th></tr></thead>
+          </table>
+        </li>
+      </ul>
+    `)
+  }
 
   refreshList () {
     this.empty()
     this.store.users.sort
     this.store.users.forEach(user => {
       const userItem = new UserItem(this.db, user)
-      $('#usersList').append(userItem.$userNode)
+      this.$el.append(userItem.$el)
       this.userItemList.push(userItem)
     })
-  },
+  }
 
   empty () {
-    $('#usersList').find('.list-group-item').remove()
+    this.$el.find('.list-group-item').remove()
     this.userItemList = []
-  },
+  }
 
   addUser (username) {
     const userInStore = this.store.users.find(user => {
@@ -30,16 +42,18 @@ module.exports = {
     })
     if (userInStore) {
       const userItem = new UserItem(this.db, userInStore)
-      this.userItemList.push(userItem.$userNode)
+      this.userItemList.push(userItem.$el)
       return userInStore
     }
     const emptyUserItem = new UserItem(this.db, username, this.store.server)
-    $('#usersList').append(emptyUserItem.$userNode)
-    this.userItemList.push(emptyUserItem.$userNode)
+    this.$el.append(emptyUserItem.$el)
+    this.userItemList.push(emptyUserItem.$el)
     return emptyUserItem.getUser()
-  },
+  }
 
   updateTotalUsers () {
     this.userItemList.forEach(userItem => userItem.updateTotalUsers())
   }
 }
+
+module.exports = UserList

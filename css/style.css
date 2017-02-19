@@ -1,15 +1,3 @@
-#overlay {
-    display: none;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5)
-}
-
-#overlay.active {
-    display: block;
-}
-
 *:disabled {
     background: #aaa;
     cursor: not-allowed;
@@ -41,14 +29,6 @@ tr th {
     text-align: center;
 }
 
-#formAddUser {
-    display: inline-block;
-}
-
-#paneRegister {
-    padding: 5px;
-}
-
 .column-third {
     width: 33.33%;
     float: left;
@@ -61,20 +41,6 @@ label {
 
 textarea {
     resize: none;
-}
-
-#paneRegister p {
-    margin: 0;
-}
-
-#paneRegister3 {
-    height: 100%;
-    overflow-y: scroll
-}
-
-#paneHome .toolbar-actions select {
-    width: 80px;
-    -webkit-app-region: no-drag;
 }
 
 .list-group-item {
@@ -105,10 +71,6 @@ textarea {
 .refreshed {
     margin-right: 10px;
     margin-top: 3px;
-}
-
-.toolbar-actions {
-    -webkit-app-region: no-drag;
 }
 
 .loading {

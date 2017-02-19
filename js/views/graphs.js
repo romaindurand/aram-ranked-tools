@@ -1,23 +1,31 @@
 const d3 = require('d3')
 const $ = require('jquery')
+const BaseView = require('./base')
 
-module.exports = {
-  selector: '#paneGraphs',
-  navText: 'Graphs',
-  navIcon: 'icon-chart-line',
-
-  init (db) {
-    this.db = db
-    this.store = db.store
-    this.drawGraph()
+class GraphsView extends BaseView {
+  constructor (db) {
+    super(db)
+    this.$legend = this.$el.find('.legend')
     this.bindEvents()
-  },
+  }
+
+  render () {
+    return $(`
+      <div class="pane">
+        <svg width="800" height="400"></svg>
+        <button class="btn btn-default pull-right save-list">
+        <span class="icon icon-arrows-ccw"></span> Refresh
+        </button>
+        <div class="legend"></div>
+      </div>
+    `)
+  }
 
   bindEvents () {
-    $(`${this.selector} button`).click(() => {
+    this.$el.find('button').click(() => {
       this.drawGraph()
     })
-  },
+  }
 
   getUsers () {
     return this.store.users.map(user => {
@@ -27,7 +35,7 @@ module.exports = {
         server: user.server
       }
     })
-  },
+  }
 
   getRandomColor () {
     const red = this.getRandomValue()
@@ -35,18 +43,18 @@ module.exports = {
     const blue = this.getRandomValue()
     const color = `#${red}${green}${blue}`
     return color
-  },
+  }
 
   getRandomValue () {
     const value = Math.round(Math.random() * 255).toString(16)
     if (value.length === 1) return `0${value}`
     return value
-  },
+  }
 
   drawGraph () {
     const svg = d3.select('svg')
     svg.html('')
-    $(`${this.selector} .legend`).html('')
+    this.$legend.html('')
     const margin = {top: 20, right: 20, bottom: 30, left: 50}
     const width = +svg.attr('width') - margin.left - margin.right
     const height = +svg.attr('height') - margin.top - margin.bottom
@@ -85,11 +93,11 @@ module.exports = {
       .call(d3.axisBottom(x))
       .select('.domain')
       .remove()
-  },
+  }
 
   addUserLabel (user) {
-    $(`${this.selector} .legend`).append(`<div style="color: ${user.color};">${user.username} (${user.server.toUpperCase()})</div>`)
-  },
+    this.$legend.append(`<div style="color: ${user.color};">${user.username} (${user.server.toUpperCase()})</div>`)
+  }
 
   drawUserGraph ({user, width, height, g, x, y}) {
     const data = this.store.history.filter(event => {
@@ -113,3 +121,5 @@ module.exports = {
       .attr('d', line)
   }
 }
+
+module.exports = GraphsView
